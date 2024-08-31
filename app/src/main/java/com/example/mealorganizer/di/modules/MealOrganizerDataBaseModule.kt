@@ -6,6 +6,7 @@ import com.example.mealorganizer.data.MealOrganizerRoomDataBase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -15,12 +16,13 @@ object MealOrganizerDataBaseModule {
 
     @Provides
     @Singleton
-    fun provideMealOrganizerDataBase(context: Context): MealOrganizerRoomDataBase {
+    fun provideMealOrganizerDataBase(@ApplicationContext context: Context): MealOrganizerRoomDataBase {
         return Room.databaseBuilder(
             context = context.applicationContext,
             MealOrganizerRoomDataBase::class.java,
             "meal_organizer_db"
         )
+            .fallbackToDestructiveMigration()
             .build()
     }
 }

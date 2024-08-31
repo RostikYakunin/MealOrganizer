@@ -13,6 +13,11 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun delete(profile: ProfileModel) = dao.delete(profile)
 
-    override suspend fun findByUserName(id: Long): ProfileModel = dao.findByUserName(id)
+    override suspend fun findByLocalId(id: Long): ProfileModel {
+        return dao.findByLocalId(id) ?: ProfileModel()
+    }
 
+    override suspend fun findByCloudUid(uid: String): ProfileModel {
+        return dao.findByCloudUid(uid) ?: ProfileModel()
+    }
 }

@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,7 +57,7 @@ fun SignUpScreen(
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         val isUserInfoValid = username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()
-        val signupState by viewModel.signupState.collectAsState()
+        val authenticationState by viewModel.authenticationState.collectAsState(AuthenticationState.Idle)
         val context = LocalContext.current
 
         Column(
@@ -62,22 +67,22 @@ fun SignUpScreen(
         ) {
             AppLogo()
 
-            SignUpTextField(
+            SignUpInTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = "Username"
+                label = stringResource(R.string.username)
             )
 
-            SignUpTextField(
+            SignUpInTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = "Email"
+                label = stringResource(R.string.email)
             )
 
-            SignUpTextField(
+            SignUpInTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = "Password",
+                label = stringResource(R.string.password),
                 isPassword = true
             )
 
@@ -89,39 +94,46 @@ fun SignUpScreen(
                 modifier = modifier
             )
 
-            showToastWithSignUpResult(signupState, context, viewModel, navController)
+            if (authenticationState != AuthenticationState.Idle) {
+                SignUpToastResult(authenticationState, context, viewModel, navController)
+            }
 
             HorizontalDividerRow()
 
             // TODO: implement logic with Google Sign Up and others
+            // TODO: implement additional field for password + feature with visible/invisible
         }
     }
 }
 
-private fun showToastWithSignUpResult(
-    signupState: SignupState,
+@Composable
+private fun SignUpToastResult(
+    authenticationState: AuthenticationState,
     context: Context,
     viewModel: AuthViewModel,
     navController: NavHostController
 ) {
-    when (signupState) {
-        is SignupState.Loading -> {
-            signupState.showToast(context,"Signing up...")
+    when (authenticationState) {
+        is AuthenticationState.Loading -> {
+            authenticationState.showToast(context, stringResource(R.string.sing_up))
         }
 
-        is SignupState.Success -> {
-            signupState.showToast(context,"Signing up successful")
+        is AuthenticationState.Success -> {
+            authenticationState.showToast(context, stringResource(R.string.sign_up_successful))
             viewModel.resetSignupState()
             navController.navigate(NavigationRoutesEnum.HOME_SCREEN.name)
         }
 
-        is SignupState.Error -> {
-            val errorMessage = signupState.errorMessage
-            signupState.showToast(context, errorMessage)
+        is AuthenticationState.Error -> {
+            val errorMessage =
+                if (authenticationState.errorMessage.contains("email")) stringResource(R.string.email_existed_error)
+                else stringResource(R.string.unexpected_error)
+
+            authenticationState.showToast(context, errorMessage)
             viewModel.resetSignupState()
         }
 
-        is SignupState.Idle -> {}
+        is AuthenticationState.Idle -> {}
     }
 }
 
@@ -157,12 +169,14 @@ private fun HorizontalDividerRow(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SignUpTextField(
+fun SignUpInTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     isPassword: Boolean = false
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -178,6 +192,14 @@ fun SignUpTextField(
             unfocusedContainerColor = Color(0xFFF2F5FA),
             focusedContainerColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
+        ),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                keyboardController?.hide()
+            }
         ),
         modifier = Modifier
             .background(Color.Transparent)

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.rememberNavController
 import com.example.mealorganizer.ui.navigation.HomeNavigation
+import com.example.mealorganizer.ui.navigation.NavigationRoutesEnum
 import com.example.mealorganizer.ui.theme.MealOrganizerTheme
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
@@ -15,13 +16,26 @@ const val TAG = "MainActivity"
 
 @AndroidEntryPoint
 class MealOrganizerActivity : ComponentActivity() {
+    @Inject
+    lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
             MealOrganizerTheme {
-                HomeNavigation(navController = rememberNavController())
+                val currentUser = auth.currentUser
+                val startDestination = if (currentUser != null) {
+                    NavigationRoutesEnum.HOME_SCREEN.name
+                } else {
+                    NavigationRoutesEnum.GREETING_SCREEN.name
+                }
+
+                HomeNavigation(
+                    navController = rememberNavController(),
+                    startRoute = startDestination
+                )
             }
         }
     }

@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.example.mealorganizer.data.profile.model.ProfileModel
 import com.example.mealorganizer.data.profile.repository.ProfileDao
 
-@Database(entities = [ProfileModel::class], version = 1)
+@Database(entities = [ProfileModel::class], version = 3)
 abstract class MealOrganizerRoomDataBase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
 }

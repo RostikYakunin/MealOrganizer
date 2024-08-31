@@ -1,3 +1,44 @@
 <resources>
+    <!--    App name -->
     <string name="app_name">MealOrganizer</string>
+
+    <!--    Greeting screen-->
+    <string name="greeting_message">Welcome to Meal Organizer</string>
+    <string name="sign_up">Sign up</string>
+    <string name="log_in">Log In</string>
+    <string name="app_title">MEAL ORGANIZER</string>
+    <string name="app_description">Your go-to tool for achieving your dietary goals with ease and precision</string>
+
+    <!--    Sign up screen -->
+    <string name="sing_up">Signing up…</string>
+    <string name="sign_up_successful">Signing up successful</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="email_existed_error">A user with the same email address already exists</string>
+    <string name="unexpected_error">Unknown error, please try again later…</string>
+
+    <!--    Log in screen-->
+    <string name="logging_in">Logging in…</string>
+    <string name="logging_successful">Logging in is successful</string>
+
+    <!--    Profile screen-->
+    <string name="profile_info">Profile info</string>
+    <string name="profile_name">Name</string>
+    <string name="profile_surname">Surname</string>
+    <string name="profile_username">Username</string>
+    <string name="profile_age">Age</string>
+    <string name="profile_weight">Weight</string>
+    <string name="log_out">Log out</string>
+    <string name="edit_profile">Edit Profile</string>
+
+    <!--    Left navigation bar-->
+    <string name="profile">Profile</string>
+    <string name="calendar">Calendar</string>
+    <string name="barcode_scanner">Barcode scanner</string>
+    <string name="calculator">Calculator</string>
+    <string name="preferences">Preferences</string>
+    <string name="notification">Notification</string>
+    <string name="help">Help</string>
+
 </resources>

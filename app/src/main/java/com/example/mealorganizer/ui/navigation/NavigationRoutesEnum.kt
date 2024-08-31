@@ -5,5 +5,6 @@ enum class NavigationRoutesEnum(routeName: String) {
     PROFILE_INFO_SCREEN("profileInfoScreen"),
     GREETING_SCREEN("greetingScreen"),
     LOG_IN_SCREEN("logInScreen"),
-    SIGN_UP_SCREEN("signUpScreen")
+    SIGN_UP_SCREEN("signUpScreen"),
+    PROFILE_INFO("profileInfo")
 }

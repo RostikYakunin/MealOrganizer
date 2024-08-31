@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.mealorganizer.ui.screens.home.bottombar.BottomMealBar
-import com.example.mealorganizer.ui.screens.home.leftbar.LeftMealBar
+import com.example.mealorganizer.ui.screens.home.leftbar.LeftNavigationBar
 import com.example.mealorganizer.ui.screens.home.topbar.TopMealBar
 
 @Composable
@@ -30,7 +30,7 @@ fun HomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            LeftMealBar(
+            LeftNavigationBar(
                 modifier = modifier,
                 navController = navController
             )

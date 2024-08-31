@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,25 +61,30 @@ fun GreetingScreen(
                 enabled = true
             )
 
-            SignInButton(
+            LogInButton(
                 modifier = modifier,
-                onClick = { navController.navigate(NavigationRoutesEnum.LOG_IN_SCREEN.name) }
+                onClick = { navController.navigate(NavigationRoutesEnum.LOG_IN_SCREEN.name) },
+                enabled = true
             )
         }
     }
 }
 
 @Composable
-fun SignInButton(
+fun LogInButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    enabled: Boolean = true,
+    buttonColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    textColor: Color = MaterialTheme.colorScheme.primary
 ) {
-    ActionButton(
+    ActionButtonModel(
         modifier = modifier,
-        buttonColor = MaterialTheme.colorScheme.primaryContainer,
+        buttonColor = buttonColor,
         onClick = onClick,
-        text = "Log in",
-        textColor = MaterialTheme.colorScheme.primary
+        text = stringResource(R.string.log_in),
+        textColor = textColor,
+        enabled = enabled
     )
 }
 
@@ -88,11 +94,11 @@ fun SignUpButton(
     onClick: () -> Unit,
     enabled: Boolean
 ) {
-    ActionButton(
+    ActionButtonModel(
         modifier = modifier,
         buttonColor = MaterialTheme.colorScheme.primary,
         onClick = onClick,
-        text = "Sign up",
+        text = stringResource(R.string.sign_up),
         textColor = MaterialTheme.colorScheme.onPrimary,
         enabled = enabled
     )
@@ -116,7 +122,7 @@ private fun AppNameText(modifier: Modifier = Modifier) {
     Text(
         style = MaterialTheme.typography.titleLarge,
         color = MaterialTheme.colorScheme.onPrimaryContainer,
-        text = "MEAL ORGANIZER",
+        text = stringResource(R.string.app_title),
         modifier = modifier
             .offset(y = (-25).dp)
     )
@@ -127,7 +133,7 @@ private fun AppDescriptionText(modifier: Modifier) {
     Text(
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onPrimaryContainer,
-        text = "Your go-to tool for achieving your dietary goals with ease and precision",
+        text = stringResource(R.string.app_description),
         textAlign = TextAlign.Center,
         modifier = modifier
             .padding(horizontal = dimensionResource(R.dimen.medium_padding))
@@ -135,7 +141,7 @@ private fun AppDescriptionText(modifier: Modifier) {
 }
 
 @Composable
-private fun ActionButton(
+fun ActionButtonModel(
     modifier: Modifier = Modifier,
     buttonColor: Color,
     onClick: () -> Unit,

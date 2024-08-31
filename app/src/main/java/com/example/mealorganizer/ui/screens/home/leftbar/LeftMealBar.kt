@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -45,7 +46,7 @@ import com.example.mealorganizer.R
 import com.example.mealorganizer.ui.navigation.NavigationRoutesEnum
 
 @Composable
-fun LeftMealBar(modifier: Modifier = Modifier, navController: NavHostController) {
+fun LeftNavigationBar(modifier: Modifier = Modifier, navController: NavHostController) {
     ModalDrawerSheet(
         drawerShape = RoundedCornerShape(
             topStart = 0.dp,
@@ -98,43 +99,44 @@ fun LeftMealBar(modifier: Modifier = Modifier, navController: NavHostController)
             ) {
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Profile",
-                    imageVector = Icons.Default.AccountBox
+                    text = stringResource(R.string.profile),
+                    imageVector = Icons.Default.AccountBox,
+                    onClick = { navController.navigate(NavigationRoutesEnum.PROFILE_INFO.name) }
                 )
 
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Calendar",
+                    text = stringResource(R.string.calendar),
                     imageVector = Icons.Default.CalendarMonth
                 )
 
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Barcode scanner",
+                    text = stringResource(R.string.barcode_scanner),
                     imageVector = Icons.Default.DocumentScanner
                 )
 
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Calculator",
+                    text = stringResource(R.string.calculator),
                     imageVector = Icons.Default.Calculate
                 )
 
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Preferences",
+                    text = stringResource(R.string.preferences),
                     imageVector = Icons.Default.Settings
                 )
 
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Notification",
+                    text = stringResource(R.string.notification),
                     imageVector = Icons.Default.Notifications
                 )
 
                 LeftMealBarItem(
                     modifier = modifier,
-                    text = "Help",
+                    text = stringResource(R.string.help),
                     imageVector = Icons.AutoMirrored.Filled.Help
                 )
             }
@@ -145,10 +147,10 @@ fun LeftMealBar(modifier: Modifier = Modifier, navController: NavHostController)
 @Composable
 private fun LeftMealBarItem(
     modifier: Modifier = Modifier,
-    text: String = "Default text",
+    text: String,
     imageVector: ImageVector = Icons.Default.Image,
-
-    ) {
+    onClick: () -> Unit = {}
+) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -163,6 +165,7 @@ private fun LeftMealBarItem(
             .padding(
                 vertical = 12.dp
             )
+            .clickable { onClick() }
     ) {
         Row(
             horizontalArrangement = Arrangement.End,
@@ -195,11 +198,11 @@ private fun LeftMealBarItem(
 @Preview
 @Composable
 fun LeftBarPreview() {
-    LeftMealBar(navController = rememberNavController())
+    LeftNavigationBar(navController = rememberNavController())
 }
 
 @Preview
 @Composable
 fun ProfileCardPreview() {
-    LeftMealBarItem()
+    LeftMealBarItem(text = "")
 }

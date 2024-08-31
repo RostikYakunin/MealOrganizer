@@ -19,5 +19,8 @@ interface ProfileDao {
     suspend fun delete(profile: ProfileModel)
 
     @Query("SELECT * FROM profile WHERE id = :id")
-    suspend fun findByUserName(id: Long): ProfileModel
+    suspend fun findByLocalId(id: Long): ProfileModel?
+
+    @Query("SELECT * FROM profile WHERE uid = :uid")
+    suspend fun findByCloudUid(uid: String): ProfileModel?
 }
