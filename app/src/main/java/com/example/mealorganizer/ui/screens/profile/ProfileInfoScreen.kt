@@ -5,8 +5,14 @@ package com.example.mealorganizer.ui.screens.profile
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Color.GRAY
+import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +20,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -34,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.mealorganizer.R
 import com.example.mealorganizer.data.profile.model.ProfileModel
 import com.example.mealorganizer.ui.navigation.NavigationRoutesEnum
@@ -65,6 +74,15 @@ fun ProfileInfoScreen(
             eraseColor(Color.GRAY)
         }
     }
+    val profileImageUri by profileViewModel.profileImageUri.collectAsState()
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            // Handle the image URI, e.g., save it and display it
+            profileViewModel.updateProfileImageUri(it)
+        }
+    }
 
     LaunchedEffect(uid) {
         uid?.let {
@@ -80,16 +98,24 @@ fun ProfileInfoScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TopProfileInfoBar(
+            text = stringResource(R.string.profile_info),
             onBackClick = { navController.popBackStack() },
             modifier = modifier
         )
 
-        ProfileImage(modifier, defaultBitmap)
+        ProfileImage(
+            profileImageUri = profileImageUri,
+            modifier = modifier,
+            defaultBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
+                eraseColor(GRAY)
+            },
+            galleryLauncher = galleryLauncher
+        )
 
         ProfileInfoLines(modifier, profile)
 
         EditProfileButton(
-            onClick = { }, //TODO: create edit profile screen
+            onClick = { navController.navigate(NavigationRoutesEnum.PROFILE_EDIT_SCREEN.name) },
             modifier = modifier
         )
 
@@ -113,42 +139,70 @@ private fun EditProfileButton(
         onClick = onClick,
         text = stringResource(R.string.edit_profile),
         textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = modifier
+        modifier = modifier,
+        enabled = true
     )
 }
 
 @Composable
-private fun ProfileImage(
+fun ProfileImage(
     modifier: Modifier,
-    defaultBitmap: Bitmap
+    profileImageUri: Uri?,
+    defaultBitmap: Bitmap,
+    galleryLauncher: ManagedActivityResultLauncher<String, Uri?>
 ) {
     Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
-            .padding(vertical = dimensionResource(R.dimen.big_padding))
+            .padding(vertical = dimensionResource(R.dimen.small_padding))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clip(CircleShape)
     ) {
-        Image(
-            bitmap = defaultBitmap.asImageBitmap(),
-            contentDescription = "Profile`s image",
-            alignment = Alignment.Center,
-            modifier = modifier
-                .sizeIn(
-                    minHeight = 150.dp,
-                    minWidth = 150.dp,
-                    maxHeight = 300.dp,
-                    maxWidth = 300.dp
-                )
-        )
+        if (profileImageUri != null) {
+            Image(
+                painter = rememberAsyncImagePainter(profileImageUri),
+                contentDescription = "Profile Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(128.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, androidx.compose.ui.graphics.Color.Gray, CircleShape)
+            )
+        } else {
+            Image(
+                bitmap = defaultBitmap.asImageBitmap(),
+                contentScale = ContentScale.Crop,
+                contentDescription = "Default Profile Image",
+                modifier = Modifier
+                    .size(128.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, androidx.compose.ui.graphics.Color.Gray, CircleShape)
+            )
+        }
+
+        IconButton(
+            onClick = { galleryLauncher.launch("image/*") },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.AddPhotoAlternate,
+                contentDescription = "Change profile image"
+            )
+        }
     }
 }
 
 @Composable
-private fun TopProfileInfoBar(onBackClick: () -> Unit, modifier: Modifier) {
+fun TopProfileInfoBar(
+    text: String,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = stringResource(R.string.profile_info),
+                text = text,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 style = MaterialTheme.typography.titleLarge
             )
@@ -259,7 +313,6 @@ fun <T> InfoLine(
                 .padding(horizontal = 20.dp)
         )
     }
-
 }
 
 @Composable

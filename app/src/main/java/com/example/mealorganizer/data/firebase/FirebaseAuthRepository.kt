@@ -1,4 +1,4 @@
-package com.example.mealorganizer.data.auth
+package com.example.mealorganizer.data.firebase
 
 import android.util.Log
 import com.google.firebase.auth.AuthResult
@@ -14,6 +14,7 @@ class FirebaseAuthRepository @Inject constructor(
     suspend fun signUpWithEmailAndPassword(email: String, password: String): Result<AuthResult> {
         return try {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            Log.i(TAG, "New user successfully signed up")
             Result.success(result)
         } catch (e: Exception) {
             Log.e(TAG, "Error signing up")
@@ -24,6 +25,7 @@ class FirebaseAuthRepository @Inject constructor(
     suspend fun logInWithEmailAndPassword(email: String, password: String): Result<AuthResult> {
         return try {
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            Log.i(TAG, "User successfully logged in")
             Result.success(result)
         } catch (e: Exception) {
             Log.e(TAG, "Error logging in")

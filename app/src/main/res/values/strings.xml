@@ -40,5 +40,6 @@
     <string name="preferences">Preferences</string>
     <string name="notification">Notification</string>
     <string name="help">Help</string>
+    <string name="profile_info_editing">Profile info editing</string>
 
 </resources>

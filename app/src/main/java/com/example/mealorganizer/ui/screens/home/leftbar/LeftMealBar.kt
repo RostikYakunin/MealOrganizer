@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,16 +50,15 @@ import com.example.mealorganizer.ui.navigation.NavigationRoutesEnum
 fun LeftNavigationBar(modifier: Modifier = Modifier, navController: NavHostController) {
     ModalDrawerSheet(
         drawerShape = RoundedCornerShape(
-            topStart = 0.dp,
-            topEnd = 30.dp,
-            bottomEnd = 30.dp,
-            bottomStart = 0.dp
+            topEnd = 32.dp,
+            bottomEnd = 32.dp,
         ),
         drawerContainerColor = MaterialTheme.colorScheme.secondaryContainer,
         modifier = modifier
             .padding(
-                horizontal = 10.dp,
-                vertical = 25.dp
+                top = dimensionResource(R.dimen.small_padding),
+                end = dimensionResource(R.dimen.very_big_padding),
+                bottom = dimensionResource(R.dimen.small_padding)
             )
             .fillMaxSize()
     ) {

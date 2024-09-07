@@ -57,7 +57,7 @@ fun SignUpScreen(
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         val isUserInfoValid = username.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()
-        val authenticationState by viewModel.authenticationState.collectAsState(AuthenticationState.Idle)
+        val authUiState by viewModel.authUiState.collectAsState(AuthUiState.Idle)
         val context = LocalContext.current
 
         Column(
@@ -94,8 +94,8 @@ fun SignUpScreen(
                 modifier = modifier
             )
 
-            if (authenticationState != AuthenticationState.Idle) {
-                SignUpToastResult(authenticationState, context, viewModel, navController)
+            if (authUiState != AuthUiState.Idle) {
+                SignUpToastResult(authUiState, context, viewModel, navController)
             }
 
             HorizontalDividerRow()
@@ -108,32 +108,32 @@ fun SignUpScreen(
 
 @Composable
 private fun SignUpToastResult(
-    authenticationState: AuthenticationState,
+    authUiState: AuthUiState,
     context: Context,
     viewModel: AuthViewModel,
     navController: NavHostController
 ) {
-    when (authenticationState) {
-        is AuthenticationState.Loading -> {
-            authenticationState.showToast(context, stringResource(R.string.sing_up))
+    when (authUiState) {
+        is AuthUiState.Loading -> {
+            authUiState.showToast(context, stringResource(R.string.sing_up))
         }
 
-        is AuthenticationState.Success -> {
-            authenticationState.showToast(context, stringResource(R.string.sign_up_successful))
+        is AuthUiState.Success -> {
+            authUiState.showToast(context, stringResource(R.string.sign_up_successful))
             viewModel.resetSignupState()
             navController.navigate(NavigationRoutesEnum.HOME_SCREEN.name)
         }
 
-        is AuthenticationState.Error -> {
+        is AuthUiState.Error -> {
             val errorMessage =
-                if (authenticationState.errorMessage.contains("email")) stringResource(R.string.email_existed_error)
+                if (authUiState.errorMessage.contains("email")) stringResource(R.string.email_existed_error)
                 else stringResource(R.string.unexpected_error)
 
-            authenticationState.showToast(context, errorMessage)
+            authUiState.showToast(context, errorMessage)
             viewModel.resetSignupState()
         }
 
-        is AuthenticationState.Idle -> {}
+        is AuthUiState.Idle -> {}
     }
 }
 

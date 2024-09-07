@@ -38,7 +38,7 @@ fun LogInScreen(
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
         val isUserInfoValid = email.isNotEmpty() && password.isNotEmpty()
-        val logInState by viewModel.authenticationState.collectAsState(AuthenticationState.Idle)
+        val logInState by viewModel.authUiState.collectAsState(AuthUiState.Idle)
         val context = LocalContext.current
 
         Column(
@@ -69,9 +69,9 @@ fun LogInScreen(
                 modifier = modifier
             )
 
-            if (logInState != AuthenticationState.Idle) {
+            if (logInState != AuthUiState.Idle) {
                 LogInToastResult(
-                    authenticationState = logInState,
+                    authUiState = logInState,
                     context = context,
                     viewModel = viewModel,
                     navController = navController
@@ -83,29 +83,29 @@ fun LogInScreen(
 
 @Composable
 private fun LogInToastResult(
-    authenticationState: AuthenticationState,
+    authUiState: AuthUiState,
     context: Context,
     viewModel: AuthViewModel,
     navController: NavHostController
 ) {
-    when (authenticationState) {
-        is AuthenticationState.Loading -> {
-            authenticationState.showToast(context, stringResource(R.string.logging_in))
+    when (authUiState) {
+        is AuthUiState.Loading -> {
+            authUiState.showToast(context, stringResource(R.string.logging_in))
         }
 
-        is AuthenticationState.Success -> {
-            authenticationState.showToast(context, stringResource(R.string.logging_successful))
+        is AuthUiState.Success -> {
+            authUiState.showToast(context, stringResource(R.string.logging_successful))
             viewModel.resetSignupState()
             navController.navigate(NavigationRoutesEnum.HOME_SCREEN.name)
         }
 
-        is AuthenticationState.Error -> {
-            val errorMessage = authenticationState.errorMessage
-            authenticationState.showToast(context, errorMessage)
+        is AuthUiState.Error -> {
+            val errorMessage = authUiState.errorMessage
+            authUiState.showToast(context, errorMessage)
             viewModel.resetSignupState()
         }
 
-        is AuthenticationState.Idle -> {}
+        is AuthUiState.Idle -> {}
     }
 }
 

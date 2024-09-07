@@ -3,9 +3,10 @@ package com.example.mealorganizer.ui.screens.login_singup
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.material3.Snackbar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mealorganizer.data.auth.FirebaseAuthRepository
+import com.example.mealorganizer.data.firebase.FirebaseAuthRepository
 import com.example.mealorganizer.data.profile.model.ProfileModel
 import com.example.mealorganizer.data.profile.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,16 +23,16 @@ class AuthViewModel @Inject constructor(
     private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
-    private val _authenticationState =
-        MutableStateFlow<AuthenticationState>(AuthenticationState.Idle)
-    val authenticationState: StateFlow<AuthenticationState> = _authenticationState
+    private val _authUiState =
+        MutableStateFlow<AuthUiState>(AuthUiState.Idle)
+    val authUiState: StateFlow<AuthUiState> = _authUiState
 
     fun singUpWithEmailAndPassword(email: String, password: String) {
         viewModelScope.launch {
-            _authenticationState.value = AuthenticationState.Loading
+            _authUiState.value = AuthUiState.Loading
 
             val authResult = authRepository.signUpWithEmailAndPassword(email, password)
-            _authenticationState.value = if (authResult.isSuccess) {
+            _authUiState.value = if (authResult.isSuccess) {
                 val user = authResult.getOrNull()?.user
                 Log.i(TAG, "New user created: ${user?.email}")
 
@@ -42,40 +43,38 @@ class AuthViewModel @Inject constructor(
                     )
                 )
 
-                AuthenticationState.Success(user?.uid ?: "")
+                AuthUiState.Success(user?.uid ?: "")
             } else {
                 Log.e(
                     TAG,
                     "Something went wrong with signing up: ${authResult.exceptionOrNull()?.message}"
                 )
-                AuthenticationState.Error(authResult.exceptionOrNull()?.message ?: "")
+                AuthUiState.Error(authResult.exceptionOrNull()?.message ?: "")
             }
-
-
         }
     }
 
     fun logInWithEmail(email: String, password: String) {
         viewModelScope.launch {
-            _authenticationState.value = AuthenticationState.Loading
+            _authUiState.value = AuthUiState.Loading
             val result = authRepository.logInWithEmailAndPassword(email, password)
 
-            _authenticationState.value = if (result.isSuccess) {
+            _authUiState.value = if (result.isSuccess) {
                 Log.i(TAG, "User logged in: ${result.getOrNull()?.user?.email}")
 
-                AuthenticationState.Success(result.getOrNull()?.user.toString())
+                AuthUiState.Success(result.getOrNull()?.user.toString())
             } else {
                 Log.e(
                     TAG,
                     "Something went wrong with logging in: ${result.exceptionOrNull()?.message}"
                 )
-                AuthenticationState.Error(result.exceptionOrNull()?.message ?: "")
+                AuthUiState.Error(result.exceptionOrNull()?.message ?: "")
             }
         }
     }
 
     fun resetSignupState() {
-        _authenticationState.value = AuthenticationState.Idle
+        _authUiState.value = AuthUiState.Idle
     }
 
     fun getCurrentUser() = authRepository.getCurrentUser()
@@ -90,19 +89,19 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 profileRepository.save(profile)
-                Log.i(TAG, "User profile saved locally.")
+                Log.i(TAG, "User profile saved to local DB.")
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to save user profile: ${e.message}")
+                Log.e(TAG, "Failed saving user`s profile to local DB: ${e.message}")
             }
         }
     }
 }
 
-sealed class AuthenticationState {
-    data object Loading : AuthenticationState()
-    data class Success(val userId: String) : AuthenticationState()
-    data class Error(val errorMessage: String) : AuthenticationState()
-    data object Idle : AuthenticationState()
+sealed class AuthUiState {
+    data object Loading : AuthUiState()
+    data class Success(val userId: String) : AuthUiState()
+    data class Error(val errorMessage: String) : AuthUiState()
+    data object Idle : AuthUiState()
 
     fun showToast(
         context: Context,

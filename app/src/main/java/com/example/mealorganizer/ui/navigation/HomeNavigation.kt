@@ -8,6 +8,7 @@ import com.example.mealorganizer.ui.screens.home.HomeScreen
 import com.example.mealorganizer.ui.screens.login_singup.GreetingScreen
 import com.example.mealorganizer.ui.screens.login_singup.LogInScreen
 import com.example.mealorganizer.ui.screens.login_singup.SignUpScreen
+import com.example.mealorganizer.ui.screens.profile.ProfileEditScreen
 import com.example.mealorganizer.ui.screens.profile.ProfileInfoScreen
 
 @Composable
@@ -41,6 +42,10 @@ fun HomeNavigation(
 
         composable(route = NavigationRoutesEnum.PROFILE_INFO.name) {
             ProfileInfoScreen(navController = navController)
+        }
+
+        composable(route = NavigationRoutesEnum.PROFILE_EDIT_SCREEN.name){
+            ProfileEditScreen(navController = navController)
         }
     }
 }
