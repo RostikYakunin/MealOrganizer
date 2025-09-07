@@ -22,6 +22,15 @@
     <string name="logging_in">Logging in…</string>
     <string name="logging_successful">Logging in is successful</string>
 
+    <!--    Left navigation bar-->
+    <string name="profile">Profile</string>
+    <string name="calendar">Calendar</string>
+    <string name="barcode_scanner">Barcode scanner</string>
+    <string name="calculator">Calculator</string>
+    <string name="preferences">Preferences</string>
+    <string name="notification">Notification</string>
+    <string name="help">Help</string>
+
     <!--    Profile screen-->
     <string name="profile_info">Profile info</string>
     <string name="profile_name">Name</string>
@@ -31,15 +40,6 @@
     <string name="profile_weight">Weight</string>
     <string name="log_out">Log out</string>
     <string name="edit_profile">Edit Profile</string>
-
-    <!--    Left navigation bar-->
-    <string name="profile">Profile</string>
-    <string name="calendar">Calendar</string>
-    <string name="barcode_scanner">Barcode scanner</string>
-    <string name="calculator">Calculator</string>
-    <string name="preferences">Preferences</string>
-    <string name="notification">Notification</string>
-    <string name="help">Help</string>
     <string name="profile_info_editing">Profile info editing</string>
 
 </resources>

@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mealorganizer"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "0.01"
@@ -102,6 +102,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
 
     // Testing
     testImplementation(libs.junit)

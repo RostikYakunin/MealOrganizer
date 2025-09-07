@@ -6,7 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-const val TAG = "FirebaseAuthRepository"
+private const val TAG = "FirebaseAuthRepository"
 
 class FirebaseAuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth

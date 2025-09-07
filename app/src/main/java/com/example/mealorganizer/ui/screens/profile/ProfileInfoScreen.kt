@@ -2,13 +2,9 @@
 
 package com.example.mealorganizer.ui.screens.profile
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.Color.GRAY
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,12 +15,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -40,9 +37,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,24 +64,10 @@ fun ProfileInfoScreen(
     authViewModel: AuthViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val uid = authViewModel.getCurrentUser()?.uid
+    val uid by profileViewModel.profileUid.collectAsState(null)
     val profile by profileViewModel.profile.collectAsState(initial = ProfileModel())
-
-    val defaultBitmap = if (profile.image.isNotEmpty())
-        BitmapFactory.decodeByteArray(profile.image, 0, profile.image.size) else {
-        Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
-            eraseColor(Color.GRAY)
-        }
-    }
-    val profileImageUri by profileViewModel.profileImageUri.collectAsState()
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            // Handle the image URI, e.g., save it and display it
-            profileViewModel.updateProfileImageUri(it)
-        }
-    }
+    val error by profileViewModel.error.collectAsState()
+    val galleryLauncher = fetchPhotoFromGallery(profileViewModel, uid)
 
     LaunchedEffect(uid) {
         uid?.let {
@@ -104,13 +89,19 @@ fun ProfileInfoScreen(
         )
 
         ProfileImage(
-            profileImageUri = profileImageUri,
+            profileImageUrl = profile.image,
             modifier = modifier,
-            defaultBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(GRAY)
-            },
+            defaultPainter = painterResource(android.R.drawable.ic_menu_gallery),
             galleryLauncher = galleryLauncher
         )
+
+        if (error != null) {
+            Text(
+                text = error!!,
+                color = MaterialTheme.colorScheme.error,
+                modifier = modifier.padding(8.dp)
+            )
+        }
 
         ProfileInfoLines(modifier, profile)
 
@@ -146,10 +137,10 @@ private fun EditProfileButton(
 
 @Composable
 fun ProfileImage(
-    modifier: Modifier,
-    profileImageUri: Uri?,
-    defaultBitmap: Bitmap,
-    galleryLauncher: ManagedActivityResultLauncher<String, Uri?>
+    modifier: Modifier = Modifier,
+    profileImageUrl: String?,
+    defaultPainter: Painter = painterResource(android.R.drawable.ic_menu_gallery),
+    galleryLauncher: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -158,47 +149,49 @@ fun ProfileImage(
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .clip(CircleShape)
     ) {
-        if (profileImageUri != null) {
-            Image(
-                painter = rememberAsyncImagePainter(profileImageUri),
-                contentDescription = "Profile Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(128.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, androidx.compose.ui.graphics.Color.Gray, CircleShape)
-            )
-        } else {
-            Image(
-                bitmap = defaultBitmap.asImageBitmap(),
-                contentScale = ContentScale.Crop,
-                contentDescription = "Default Profile Image",
-                modifier = Modifier
-                    .size(128.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, androidx.compose.ui.graphics.Color.Gray, CircleShape)
-            )
-        }
-
-        IconButton(
-            onClick = { galleryLauncher.launch("image/*") },
+        Image(
+            painter = if (profileImageUrl.isNullOrEmpty()) defaultPainter else rememberAsyncImagePainter(
+                profileImageUrl
+            ),
+            contentDescription = "Profile Image",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
+                .size(128.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.Gray, CircleShape)
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .offset(y = (-45).dp, x = 50.dp)
+            .clip(CircleShape)
+            .border(2.dp, Color.DarkGray, CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .size(40.dp)
+    ) {
+        IconButton(
+            onClick = {
+                galleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
         ) {
             Icon(
-                imageVector = Icons.Filled.AddPhotoAlternate,
+                imageVector = Icons.Filled.AddAPhoto,
                 contentDescription = "Change profile image"
             )
         }
     }
 }
 
+
 @Composable
 fun TopProfileInfoBar(
     text: String,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(

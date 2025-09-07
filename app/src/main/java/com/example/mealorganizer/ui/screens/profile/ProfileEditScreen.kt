@@ -1,9 +1,5 @@
 package com.example.mealorganizer.ui.screens.profile
 
-import android.graphics.Bitmap
-import android.graphics.Color.GRAY
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +31,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +45,7 @@ import com.example.mealorganizer.data.profile.model.ProfileModel
 import com.example.mealorganizer.ui.screens.login_singup.ActionButtonModel
 import com.example.mealorganizer.ui.screens.login_singup.AuthViewModel
 
+
 @Composable
 fun ProfileEditScreen(
     modifier: Modifier = Modifier,
@@ -56,19 +55,18 @@ fun ProfileEditScreen(
 ) {
     val uid = authViewModel.getCurrentUser()?.uid
     val profile by profileViewModel.profile.collectAsState(initial = ProfileModel())
-    var name by remember { mutableStateOf(profile.name) }
-    var surname by remember { mutableStateOf(profile.surname) }
-    var username by remember { mutableStateOf(profile.userName) }
-    var age by remember { mutableStateOf(profile.age.toString()) }
-    var weight by remember { mutableStateOf(profile.weight.toString()) }
-    val profileImageUri by profileViewModel.profileImageUri.collectAsState()
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            // Handle the image URI, e.g., save it and display it
-            profileViewModel.updateProfileImageUri(it)
-        }
+    val error by profileViewModel.error.collectAsState()
+    var name by remember { mutableStateOf(profile.name ?: "") }
+    var surname by remember { mutableStateOf(profile.surname ?: "") }
+    var username by remember { mutableStateOf(profile.userName ?: "") }
+    var age by remember { mutableStateOf(profile.age?.toString() ?: "") }
+    var weight by remember { mutableStateOf(profile.weight?.toString() ?: "") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    val galleryLauncher = fetchPhotoFromGallery(profileViewModel, uid)
+
+    LaunchedEffect(profile) {
+        isLoading = false
     }
 
     LaunchedEffect(uid) {
@@ -90,57 +88,78 @@ fun ProfileEditScreen(
             modifier = modifier
         )
 
-        ProfileImage(
-            modifier = modifier,
-            profileImageUri = profileImageUri,
-            defaultBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888).apply {
-                eraseColor(GRAY)
-            },
-            galleryLauncher = galleryLauncher
-        )
+        if (isLoading) {
+            CircularProgressIndicator(modifier = modifier.padding(16.dp))
+        } else {
+            ProfileImage(
+                modifier = modifier,
+                profileImageUrl = profile.image,
+                defaultPainter = painterResource(android.R.drawable.ic_menu_gallery),
+                galleryLauncher = galleryLauncher
+            )
+        }
+
+        if (error != null) {
+            Text(
+                text = error!!,
+                color = MaterialTheme.colorScheme.error,
+                modifier = modifier.padding(8.dp)
+            )
+        }
 
         EditLine(
             label = "Name",
             initialValue = name,
-            placeholder = profile.name,
+            placeholder = profile.name ?: "",
             onValueChange = { name = it }
         )
 
         EditLine(
             label = "Surname",
             initialValue = surname,
-            placeholder = profile.surname,
+            placeholder = profile.surname ?: "",
             onValueChange = { surname = it }
         )
 
         EditLine(
             label = "Username",
             initialValue = username,
-            placeholder = profile.userName,
+            placeholder = profile.userName ?: "",
             onValueChange = { username = it }
         )
 
         EditLine(
             label = "Age",
             initialValue = age,
-            placeholder = profile.age.toString(),
+            placeholder = profile.age?.toString() ?: "",
             onValueChange = { age = it }
         )
 
         EditLine(
             label = "Weight",
             initialValue = weight,
-            placeholder = profile.weight.toString(),
+            placeholder = profile.weight?.toString() ?: "",
             onValueChange = { weight = it }
         )
 
         ActionButtonModel(
             buttonColor = MaterialTheme.colorScheme.primary,
-            onClick = { },
+            onClick = {
+                val updatedProfile = profile.copy(
+                    name = name,
+                    surname = surname,
+                    userName = username,
+                    age = age.toByteOrNull() ?: profile.age,
+                    weight = weight.toByteOrNull() ?: profile.weight,
+                    uid = uid
+                )
+                profileViewModel.updateProfile(updatedProfile)
+                navController.popBackStack()
+            },
             text = "Save changes",
             textColor = MaterialTheme.colorScheme.onPrimary,
             modifier = modifier.padding(top = 12.dp),
-            enabled = true
+            enabled = !isLoading
         )
     }
 }

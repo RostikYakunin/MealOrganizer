@@ -3,12 +3,14 @@ package com.example.mealorganizer.ui.screens.login_singup
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.material3.Snackbar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.mealorganizer.data.data_store.ProfilePreferencesKeys
+import com.example.mealorganizer.data.data_store.ProfilePreferencesRepository
 import com.example.mealorganizer.data.firebase.FirebaseAuthRepository
 import com.example.mealorganizer.data.profile.model.ProfileModel
 import com.example.mealorganizer.data.profile.repository.ProfileRepository
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,11 +22,11 @@ const val TAG = "AuthViewModel"
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: FirebaseAuthRepository,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val profilePreferencesRepository: ProfilePreferencesRepository
 ) : ViewModel() {
 
-    private val _authUiState =
-        MutableStateFlow<AuthUiState>(AuthUiState.Idle)
+    private val _authUiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val authUiState: StateFlow<AuthUiState> = _authUiState
 
     fun singUpWithEmailAndPassword(email: String, password: String) {
@@ -36,12 +38,13 @@ class AuthViewModel @Inject constructor(
                 val user = authResult.getOrNull()?.user
                 Log.i(TAG, "New user created: ${user?.email}")
 
-                saveUserProfile(
-                    ProfileModel(
-                        uid = user?.uid.toString(),
-                        email = user?.email.toString()
-                    )
+                val profileModel = ProfileModel(
+                    uid = user?.uid.toString(),
+                    email = user?.email.toString()
                 )
+
+                saveUserProfile(profileModel)
+                saveUidIfNotPresent(user)
 
                 AuthUiState.Success(user?.uid ?: "")
             } else {
@@ -57,18 +60,20 @@ class AuthViewModel @Inject constructor(
     fun logInWithEmail(email: String, password: String) {
         viewModelScope.launch {
             _authUiState.value = AuthUiState.Loading
-            val result = authRepository.logInWithEmailAndPassword(email, password)
+            val authResult = authRepository.logInWithEmailAndPassword(email, password)
 
-            _authUiState.value = if (result.isSuccess) {
-                Log.i(TAG, "User logged in: ${result.getOrNull()?.user?.email}")
+            _authUiState.value = if (authResult.isSuccess) {
+                val user = authResult.getOrNull()?.user
+                Log.i(TAG, "User logged in: ${authResult.getOrNull()?.user?.email}")
 
-                AuthUiState.Success(result.getOrNull()?.user.toString())
+                saveUidIfNotPresent(user)
+                AuthUiState.Success(authResult.getOrNull()?.user.toString())
             } else {
                 Log.e(
                     TAG,
-                    "Something went wrong with logging in: ${result.exceptionOrNull()?.message}"
+                    "Something went wrong with logging in: ${authResult.exceptionOrNull()?.message}"
                 )
-                AuthUiState.Error(result.exceptionOrNull()?.message ?: "")
+                AuthUiState.Error(authResult.exceptionOrNull()?.message ?: "")
             }
         }
     }
@@ -93,6 +98,13 @@ class AuthViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Failed saving user`s profile to local DB: ${e.message}")
             }
+        }
+    }
+
+    private suspend fun saveUidIfNotPresent(user: FirebaseUser?) {
+        if (profilePreferencesRepository.isValueNotPresent(ProfilePreferencesKeys.UID_KEY.name)) {
+            Log.i(TAG, "Uid is not present, starting saving... ")
+            profilePreferencesRepository.saveUserUID(user?.uid.toString())
         }
     }
 }
