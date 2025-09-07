@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.20-1.0.14"
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -13,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mealorganizer"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "0.01"
@@ -61,6 +62,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.compose.material3.material3)
 
     //ViewModel and navigation
     implementation(libs.activity.compose)
@@ -75,18 +77,19 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
 
-    //Json serialization
+    //Retrofit and json serialization
     implementation(libs.retrofit2.kotlinx.serialization.converter)
     implementation(libs.kotlinx.serialization.json)
-
-    // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 
     //Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Coil
     implementation(libs.coil.compose)
@@ -94,6 +97,12 @@ dependencies {
     // Datastore Preferences Proto
     implementation(libs.datastore.preferences)
     implementation(libs.datastore)
+
+    //Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
 
     // Testing
     testImplementation(libs.junit)
